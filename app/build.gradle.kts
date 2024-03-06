@@ -27,7 +27,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -71,6 +71,7 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.49")
     ksp("com.google.dagger:hilt-compiler:2.49")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -78,4 +79,7 @@ dependencies {
 
     // ApiResult
     implementation("com.github.Sam-muigai:ApiResult:1.0.2")
+
+    // Moshi
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
 }

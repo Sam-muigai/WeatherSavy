@@ -1,6 +1,10 @@
 package com.samkt.weathersavy.features.weather.presentation
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,13 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
@@ -40,6 +44,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samkt.weathersavy.R
 import com.samkt.weathersavy.features.weather.data.model.CurrentWeather
 import com.samkt.weathersavy.utils.getBackgroundImage
@@ -53,6 +62,12 @@ fun HomeScreen(
 ) {
     AnimatedContent(
         targetState = homeViewModel.homeScreenState.collectAsState().value,
+        transitionSpec = {
+            fadeIn(
+                animationSpec = tween(500),
+            ) togetherWith
+                fadeOut(animationSpec = tween(500))
+        },
         label = "",
     ) { homeScreenState: HomeScreenState ->
         when (homeScreenState) {
@@ -110,6 +125,7 @@ fun HomeScreenContent(
                 model =
                     ImageRequest.Builder(context)
                         .data(currentWeather.weather[0].main.getBackgroundImage())
+                        .crossfade(true)
                         .build(),
                 contentDescription = "background",
                 contentScale = ContentScale.Crop,
@@ -273,6 +289,22 @@ fun HomeLoadingScreen(modifier: Modifier = Modifier) {
                 .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator()
+        val loaderLottieComposition by rememberLottieComposition(
+            LottieCompositionSpec.RawRes(
+                R.raw.weather_loading,
+            ),
+        )
+
+        val loaderProgress by animateLottieCompositionAsState(
+            loaderLottieComposition,
+            iterations = LottieConstants.IterateForever,
+            isPlaying = true,
+        )
+
+        LottieAnimation(
+            composition = loaderLottieComposition,
+            progress = loaderProgress,
+            modifier = modifier.size(70.dp),
+        )
     }
 }

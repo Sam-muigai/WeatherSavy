@@ -190,7 +190,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                DeniedPermission(
+                                DeniedPermissionAnimation(
                                     modifier = Modifier.size(250.dp),
                                 )
                                 Text(
@@ -252,7 +252,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DeniedPermission(modifier: Modifier = Modifier) {
+fun DeniedPermissionAnimation(modifier: Modifier = Modifier) {
     val preloaderLottieComposition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(
             R.raw.denied,

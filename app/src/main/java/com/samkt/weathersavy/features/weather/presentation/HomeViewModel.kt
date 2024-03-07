@@ -27,7 +27,7 @@ class HomeViewModel
 
         private fun getCurrentWeather() {
             _homeScreenState.value = HomeScreenState.Loading
-            currentWeatherRepository.getCurrentWeather("90.29", "24.47")
+            currentWeatherRepository.getCurrentWeather()
                 .onEach { apiResult ->
                     when (apiResult) {
                         is ApiResult.Error -> {

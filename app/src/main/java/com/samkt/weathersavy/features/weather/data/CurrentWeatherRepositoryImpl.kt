@@ -2,6 +2,7 @@ package com.samkt.weathersavy.features.weather.data
 
 import com.samkt.apiResult.ApiResult
 import com.samkt.apiResult.handleApiCall
+import com.samkt.weathersavy.core.location.LocationService
 import com.samkt.weathersavy.core.network.OpenWeatherApiService
 import com.samkt.weathersavy.features.weather.data.model.CurrentWeather
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
@@ -13,16 +14,28 @@ class CurrentWeatherRepositoryImpl
     @Inject
     constructor(
         private val openWeatherApiService: OpenWeatherApiService,
+        private val locationService: LocationService,
     ) : CurrentWeatherRepository {
-        override fun getCurrentWeather(
-            longitude: String,
-            latitude: String,
-        ): Flow<ApiResult<CurrentWeather>> =
+        override fun getCurrentWeather(): Flow<ApiResult<CurrentWeather>> =
             flow {
-                emit(
-                    handleApiCall {
-                        openWeatherApiService.getCurrentWeather(longitude, latitude).toCurrentWeather()
-                    },
-                )
+                val userLocation = locationService.getLocation()
+                if (userLocation != null) {
+                    emit(
+                        handleApiCall {
+                            openWeatherApiService.getCurrentWeather(
+                                userLocation.longitude,
+                                userLocation.latitude,
+                            ).toCurrentWeather()
+                        },
+                    )
+                } else {
+                    // Default to Nairobi if location is not found
+                    emit(
+                        handleApiCall {
+                            openWeatherApiService.getCurrentWeather("36.82", "-1.29")
+                                .toCurrentWeather()
+                        },
+                    )
+                }
             }
     }

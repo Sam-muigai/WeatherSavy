@@ -11,5 +11,6 @@ interface OpenWeatherApiService {
         @Query("lon") longitude: String,
         @Query("lat") latitude: String,
         @Query("appid") apiKey: String = Constants.API_KEY,
+        @Query("units") units: String = "metric",
     ): CurrentWeatherResponseDto
 }

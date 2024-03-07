@@ -82,4 +82,7 @@ dependencies {
 
     // Moshi
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+
+    // Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

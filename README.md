@@ -19,3 +19,7 @@ WeatherSavy is a comprehensive weather application designed to provide users wit
   </tr>
   </table>
 
+<b>NB:</b> The app is still a WIP
+
+##  Contribution
+Contributions, issues, and feature requests are welcome!

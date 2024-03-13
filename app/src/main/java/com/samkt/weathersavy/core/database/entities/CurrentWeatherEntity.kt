@@ -8,9 +8,10 @@ data class CurrentWeatherEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int? = null,
     val location: String,
-    val temperature: String,
+    val temperature: Double,
     val condition: String,
-    val humidity: String,
-    val wind: String,
-    val feelsLike: String,
+    val humidity: Int,
+    val wind: Double,
+    val feelsLike: Int,
+    val weatherIcon: String,
 )

@@ -3,8 +3,8 @@ package com.samkt.weathersavy.features.weather.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samkt.apiResult.ApiResult
-import com.samkt.weathersavy.features.weather.data.model.CurrentWeather
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
+import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -50,7 +50,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samkt.weathersavy.R
-import com.samkt.weathersavy.features.weather.data.model.CurrentWeather
+import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
 import com.samkt.weathersavy.utils.getBackgroundImage
 import com.samkt.weathersavy.utils.getTodayDate
 import com.samkt.weathersavy.utils.getWeatherIcon
@@ -124,7 +124,7 @@ fun HomeScreenContent(
                 modifier = Modifier.fillMaxSize(),
                 model =
                     ImageRequest.Builder(context)
-                        .data(currentWeather.weather[0].main.getBackgroundImage())
+                        .data(currentWeather.condition.getBackgroundImage())
                         .crossfade(true)
                         .build(),
                 contentDescription = "background",
@@ -155,7 +155,7 @@ fun HomeScreenContent(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = currentWeather.name,
+                        text = currentWeather.location,
                         style =
                             MaterialTheme.typography.bodyLarge,
                     )
@@ -173,14 +173,14 @@ fun HomeScreenContent(
                     modifier = Modifier.size(48.dp),
                     model =
                         ImageRequest.Builder(context)
-                            .data(currentWeather.weather[0].icon.getWeatherIcon())
+                            .data(currentWeather.weatherIcon.getWeatherIcon())
                             .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = currentWeather.weather[0].main,
+                    text = currentWeather.condition,
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Text(
@@ -188,7 +188,7 @@ fun HomeScreenContent(
                         buildAnnotatedString {
                             withStyle(style = SpanStyle()) {
                                 append(
-                                    currentWeather.main?.temp.toString(),
+                                    currentWeather.temperature.toString(),
                                 )
                             }
                             withStyle(
@@ -206,9 +206,9 @@ fun HomeScreenContent(
                 Spacer(modifier = Modifier.height(32.dp))
                 WeatherAnalysis(
                     modifier = Modifier.padding(16.dp),
-                    humidity = currentWeather.main?.humidity.toString(),
-                    windSpeed = currentWeather.wind?.speed.toString(),
-                    feelsLike = currentWeather.main?.feelsLike.toString(),
+                    humidity = currentWeather.humidity.toString(),
+                    windSpeed = currentWeather.wind.toString(),
+                    feelsLike = currentWeather.feelsLike.toString(),
                 )
             }
         }

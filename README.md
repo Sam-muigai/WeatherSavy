@@ -4,6 +4,13 @@
 
 WeatherSavy is a comprehensive weather application designed to provide users with accurate and up-to-date weather conditions and forecasts based on their location.
 
+## Setup
+Obtain your key from [OPEN WEATHER API](https://openweathermap.org/api) and replace it in the `Constants` file in the utils package:
+
+```kotlin
+    const val API_KEY = "YOUR_API_KEY"
+```
+
 ## Screenshots
 
 <table>

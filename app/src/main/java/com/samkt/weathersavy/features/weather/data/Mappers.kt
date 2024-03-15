@@ -12,10 +12,11 @@ fun CurrentWeatherResponseDto.toCurrentWeatherEntity(): CurrentWeatherEntity {
         humidity = mainDto?.humidity ?: 0,
         wind = windDto?.speed ?: 0.0,
         feelsLike = mainDto?.humidity ?: 0,
+        weatherIcon = weatherDto[0].icon,
     )
 }
 
-fun CurrentWeatherEntity.toCurrentWeather(): CurrentWeather  {
+fun CurrentWeatherEntity.toCurrentWeather(): CurrentWeather {
     return CurrentWeather(
         location,
         temperature,
@@ -23,5 +24,6 @@ fun CurrentWeatherEntity.toCurrentWeather(): CurrentWeather  {
         humidity,
         wind,
         feelsLike,
+        weatherIcon,
     )
 }

@@ -22,10 +22,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
@@ -51,15 +57,42 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samkt.weathersavy.R
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
+import com.samkt.weathersavy.utils.UiEvents
 import com.samkt.weathersavy.utils.getBackgroundImage
 import com.samkt.weathersavy.utils.getTodayDate
 import com.samkt.weathersavy.utils.getWeatherIcon
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
+    val snackBarState =
+        remember {
+            SnackbarHostState()
+        }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(
+        key1 = Unit,
+        block = {
+            homeViewModel.uiEvents.collectLatest { event ->
+                when (event) {
+                    is UiEvents.ShowSnackBar -> {
+                        scope.launch {
+                            snackBarState.showSnackbar(
+                                message = event.message,
+                                duration = SnackbarDuration.Indefinite,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+    )
+
     AnimatedContent(
         targetState = homeViewModel.homeScreenState.collectAsState().value,
         transitionSpec = {
@@ -85,6 +118,7 @@ fun HomeScreen(
                 HomeScreenContent(
                     currentWeather = homeScreenState.data,
                     date = getTodayDate(),
+                    snackBarState = snackBarState,
                 )
             }
         }
@@ -112,10 +146,14 @@ fun HomeScreenContent(
     modifier: Modifier = Modifier,
     currentWeather: CurrentWeather,
     date: String = "March 06",
+    snackBarState: SnackbarHostState,
 ) {
     val context = LocalContext.current
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(snackBarState)
+        },
     ) { paddingValues ->
         Box(
             modifier = modifier.fillMaxSize(),

@@ -11,7 +11,6 @@ import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
 import com.samkt.weathersavy.utils.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.delay
 
 private const val TAG = "SyncingWorker"
 
@@ -25,10 +24,21 @@ class SyncingWorker
         @Assisted private val notificationHelper: NotificationHelper,
     ) : CoroutineWorker(appContext, params) {
         override suspend fun doWork(): Result {
-            delay(2000)
             return try {
-                notificationHelper.showNotification()
-                Log.d(TAG, "Doing some work")
+                currentWeatherRepository.syncWeather(
+                    onSyncSuccess = {
+                        notificationHelper.showNotification(
+                            title = it.location,
+                            content = it.condition,
+                        )
+                    },
+                    onSyncFailed = {
+                        notificationHelper.showNotification(
+                            title = "Failed",
+                            content = it.localizedMessage ?: "Unknown error",
+                        )
+                    },
+                )
                 Result.success()
             } catch (e: Exception) {
                 Result.failure()

@@ -5,4 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface CurrentWeatherRepository {
     fun getCurrentWeather(): Flow<CurrentWeather>
+
+    suspend fun syncWeather(
+        onSyncSuccess: (CurrentWeather) -> Unit,
+        onSyncFailed: (error: Exception) -> Unit,
+    )
 }

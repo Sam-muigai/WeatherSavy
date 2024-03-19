@@ -1,11 +1,5 @@
 package com.samkt.weathersavy.features.weather.presentation
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +16,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -50,19 +42,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samkt.weathersavy.R
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
-import com.samkt.weathersavy.utils.UiEvents
 import com.samkt.weathersavy.utils.getBackgroundImage
-import com.samkt.weathersavy.utils.getTodayDate
 import com.samkt.weathersavy.utils.getWeatherIcon
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -74,71 +57,11 @@ fun HomeScreen(
             SnackbarHostState()
         }
     val scope = rememberCoroutineScope()
-
-    LaunchedEffect(
-        key1 = Unit,
-        block = {
-            homeViewModel.uiEvents.collectLatest { event ->
-                when (event) {
-                    is UiEvents.ShowSnackBar -> {
-                        scope.launch {
-                            snackBarState.showSnackbar(
-                                message = event.message,
-                                duration = SnackbarDuration.Indefinite,
-                            )
-                        }
-                    }
-                }
-            }
-        },
+    val currentWeather = homeViewModel.currentWeather.collectAsState().value
+    HomeScreenContent(
+        currentWeather = currentWeather,
+        snackBarState = snackBarState,
     )
-
-    AnimatedContent(
-        targetState = homeViewModel.homeScreenState.collectAsState().value,
-        transitionSpec = {
-            fadeIn(
-                animationSpec = tween(500),
-            ) togetherWith
-                fadeOut(animationSpec = tween(500))
-        },
-        label = "",
-    ) { homeScreenState: HomeScreenState ->
-        when (homeScreenState) {
-            is HomeScreenState.Error -> {
-                HomeScreenError(
-                    errorMessage = homeScreenState.message,
-                )
-            }
-
-            HomeScreenState.Loading -> {
-                HomeLoadingScreen(modifier = modifier)
-            }
-
-            is HomeScreenState.Success -> {
-                HomeScreenContent(
-                    currentWeather = homeScreenState.data,
-                    date = getTodayDate(),
-                    snackBarState = snackBarState,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeScreenError(
-    modifier: Modifier = Modifier,
-    errorMessage: String = "",
-) {
-    Box(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = errorMessage)
-    }
 }
 
 @Composable
@@ -315,34 +238,5 @@ fun WeatherAnalysis(
                 style = MaterialTheme.typography.labelLarge,
             )
         }
-    }
-}
-
-@Composable
-fun HomeLoadingScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        val loaderLottieComposition by rememberLottieComposition(
-            LottieCompositionSpec.RawRes(
-                R.raw.weather_loading,
-            ),
-        )
-
-        val loaderProgress by animateLottieCompositionAsState(
-            loaderLottieComposition,
-            iterations = LottieConstants.IterateForever,
-            isPlaying = true,
-        )
-
-        LottieAnimation(
-            composition = loaderLottieComposition,
-            progress = loaderProgress,
-            modifier = modifier.size(70.dp),
-        )
     }
 }

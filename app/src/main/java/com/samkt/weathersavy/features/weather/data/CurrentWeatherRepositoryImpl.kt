@@ -6,12 +6,11 @@ import com.samkt.weathersavy.core.location.LocationService
 import com.samkt.weathersavy.core.network.OpenWeatherApiService
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
-import com.samkt.weathersavy.utils.Result
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import java.io.IOException
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class CurrentWeatherRepositoryImpl
@@ -21,29 +20,26 @@ class CurrentWeatherRepositoryImpl
         private val locationService: LocationService,
         private val currentWeatherDatabase: CurrentWeatherDatabase,
     ) : CurrentWeatherRepository {
-        override fun getCurrentWeather(): Flow<Result<CurrentWeather>> =
+        override fun getCurrentWeather(): Flow<CurrentWeather> =
             flow {
                 val userLocation = locationService.getLocation()
                 if (userLocation != null) {
-                    processRequest(
-                        userLocation.longitude,
-                        userLocation.latitude,
+                    emit(
+                        processRequest(userLocation.longitude, userLocation.latitude),
                     )
                 } else {
-                    // Default to Nairobi if location is not found
-                    processRequest(
-                        "36.82",
-                        "-1.29",
+                    emit(
+                        processRequest("32.4", "-0.67"),
                     )
                 }
             }
 
-        private suspend fun FlowCollector<Result<CurrentWeather>>.processRequest(
+        private suspend fun processRequest(
             longitude: String,
             latitude: String,
-        ) {
+        ): CurrentWeather {
             val currentWeatherDao = currentWeatherDatabase.dao()
-            try {
+            return try {
                 val remoteCurrentWeather =
                     openWeatherApiService.getCurrentWeather(
                         longitude,
@@ -54,43 +50,28 @@ class CurrentWeatherRepositoryImpl
                     currentWeatherDao.deleteCurrentWeather()
                     currentWeatherDao.insertCurrentWeather(localCurrentWeather)
                 }
-                val currentWeather =
-                    currentWeatherDao.getCurrentWeather().first()[0].toCurrentWeather()
-                emit(
-                    Result.Success(
-                        data = currentWeather,
-                    ),
-                )
+                val currentWeather: Flow<CurrentWeather> =
+                    currentWeatherDao.getCurrentWeather().map { currentWeathers ->
+                        currentWeathers.firstOrNull()
+                    }
+                        .filterNotNull()
+                        .map {
+                            it.toCurrentWeather()
+                        }
+                currentWeather.first()
             } catch (exc: Exception) {
                 if (currentWeatherDao.getCurrentWeather().first().isEmpty()) {
-                    emit(
-                        Result.Error(
-                            exc.localizedMessage,
-                        ),
-                    )
+                    CurrentWeather()
                 } else {
-                    val currentWeather =
-                        currentWeatherDao.getCurrentWeather().first()[0].toCurrentWeather()
-
-                    when (exc) {
-                        is IOException -> {
-                            emit(
-                                Result.Success(
-                                    data = currentWeather,
-                                    message = "No internet connection!!",
-                                ),
-                            )
+                    val currentWeather: Flow<CurrentWeather> =
+                        currentWeatherDao.getCurrentWeather().map { currentWeathers ->
+                            currentWeathers.firstOrNull()
                         }
-
-                        else -> {
-                            emit(
-                                Result.Success(
-                                    data = currentWeather,
-                                    message = exc.localizedMessage,
-                                ),
-                            )
-                        }
-                    }
+                            .filterNotNull()
+                            .map {
+                                it.toCurrentWeather()
+                            }
+                    currentWeather.first()
                 }
             }
         }

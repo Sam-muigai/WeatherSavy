@@ -22,9 +22,8 @@ class SyncingWorker
         @Assisted appContext: Context,
         @Assisted params: WorkerParameters,
         @Assisted private val currentWeatherRepository: CurrentWeatherRepository,
+        @Assisted private val notificationHelper: NotificationHelper,
     ) : CoroutineWorker(appContext, params) {
-        private val notificationHelper: NotificationHelper = NotificationHelper(applicationContext)
-
         override suspend fun doWork(): Result {
             delay(2000)
             return try {

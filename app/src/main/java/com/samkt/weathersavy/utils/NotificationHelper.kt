@@ -7,6 +7,8 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.samkt.weathersavy.R
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 private const val CHANNEL_ID = "weather_savy_notification_id"
 private const val NOTIFICATION_ID = 1
@@ -14,7 +16,9 @@ private const val CHANNEL_NAME = "weather_channel"
 
 private const val TAG = "NotificationHelper"
 
-class NotificationHelper(private val context: Context) {
+class NotificationHelper @Inject constructor(
+   @ApplicationContext private val context: Context
+) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+private const val TAG = "CurrentWeatherRepositoryImpl"
+
 class CurrentWeatherRepositoryImpl
     @Inject
     constructor(
@@ -62,6 +64,15 @@ class CurrentWeatherRepositoryImpl
                 exc.printStackTrace()
                 onSyncFailed.invoke(exc)
             }
+        }
+
+        override fun currentWeatherEmpty(): Flow<Boolean> {
+            return currentWeatherDatabase
+                .dao()
+                .getCurrentWeather()
+                .map {
+                    it.isEmpty()
+                }
         }
 
         private suspend fun processRequest(

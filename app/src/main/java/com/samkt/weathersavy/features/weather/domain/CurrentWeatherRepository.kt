@@ -10,4 +10,6 @@ interface CurrentWeatherRepository {
         onSyncSuccess: (CurrentWeather) -> Unit,
         onSyncFailed: (error: Exception) -> Unit,
     )
+
+    fun currentWeatherEmpty(): Flow<Boolean>
 }

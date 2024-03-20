@@ -146,11 +146,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    startSyncing(applicationContext)
                     Scaffold(snackbarHost = {
                         SnackbarHost(hostState = snackbarHostState)
                     }) { contentPadding ->
                         if (locationPermissionsGranted) {
+                            startSyncing(applicationContext)
                             HomeScreen(
                                 modifier =
                                     Modifier

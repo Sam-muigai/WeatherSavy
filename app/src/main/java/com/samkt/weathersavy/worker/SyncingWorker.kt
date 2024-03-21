@@ -14,7 +14,6 @@ import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
 import com.samkt.weathersavy.utils.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "SyncingWorker"
@@ -30,7 +29,7 @@ class SyncingWorker
     ) : CoroutineWorker(appContext, params) {
         override suspend fun doWork(): Result {
             return try {
-                delay(5_000)
+                Log.d(TAG, "Doing sync work")
                 currentWeatherRepository.syncWeather(
                     onSyncSuccess = {
                         notificationHelper.showNotification(
@@ -47,29 +46,29 @@ class SyncingWorker
                 Result.failure()
             }
         }
+
+        companion object {
+            fun startSyncing(context: Context) {
+                val constraints =
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+
+                val startSyncingRequest =
+                    PeriodicWorkRequestBuilder<SyncingWorker>(
+                        repeatInterval = 30,
+                        repeatIntervalTimeUnit = TimeUnit.MINUTES,
+                    )
+                        .setConstraints(constraints)
+                        .build()
+
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    WORK_NAME,
+                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                    startSyncingRequest,
+                )
+            }
+        }
     }
-
-fun startSyncing(context: Context) {
-    Log.d(TAG, "Sync starting")
-
-    val constraints =
-        Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-    val startSyncingRequest =
-        PeriodicWorkRequestBuilder<SyncingWorker>(
-            repeatInterval = 1,
-            repeatIntervalTimeUnit = TimeUnit.MINUTES,
-        )
-            .setConstraints(constraints)
-            .build()
-
-    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        WORK_NAME,
-        ExistingPeriodicWorkPolicy.KEEP,
-        startSyncingRequest,
-    )
-}
 
 const val WORK_NAME = "syncing_work"

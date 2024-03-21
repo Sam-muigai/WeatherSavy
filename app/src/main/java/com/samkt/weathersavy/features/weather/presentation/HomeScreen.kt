@@ -1,5 +1,6 @@
 package com.samkt.weathersavy.features.weather.presentation
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -49,6 +51,7 @@ import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
 import com.samkt.weathersavy.utils.getBackgroundImage
 import com.samkt.weathersavy.utils.getTodayDate
 import com.samkt.weathersavy.utils.getWeatherIcon
+import com.samkt.weathersavy.worker.SyncingWorker
 
 private const val TAG = "HomeScreen"
 
@@ -56,7 +59,15 @@ private const val TAG = "HomeScreen"
 fun HomeScreen(
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = hiltViewModel(),
+    context: Context,
 ) {
+    LaunchedEffect(
+        key1 = Unit,
+        block = {
+            SyncingWorker.startSyncing(context)
+        },
+    )
+
     val snackBarState =
         remember {
             SnackbarHostState()

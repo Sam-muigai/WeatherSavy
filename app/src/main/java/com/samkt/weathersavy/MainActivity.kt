@@ -49,7 +49,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.samkt.weathersavy.features.weather.presentation.HomeScreen
 import com.samkt.weathersavy.ui.theme.WeatherSavyTheme
-import com.samkt.weathersavy.worker.startSyncing
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -150,12 +149,12 @@ class MainActivity : ComponentActivity() {
                         SnackbarHost(hostState = snackbarHostState)
                     }) { contentPadding ->
                         if (locationPermissionsGranted) {
-                            startSyncing(applicationContext)
                             HomeScreen(
                                 modifier =
                                     Modifier
                                         .fillMaxSize()
                                         .padding(paddingValues = contentPadding),
+                                context = applicationContext,
                             )
                         }
                     }

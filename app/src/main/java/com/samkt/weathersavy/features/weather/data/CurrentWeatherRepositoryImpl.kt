@@ -2,6 +2,7 @@ package com.samkt.weathersavy.features.weather.data
 
 import androidx.room.withTransaction
 import com.samkt.weathersavy.core.database.CurrentWeatherDatabase
+import com.samkt.weathersavy.core.datastore.CurrentWeatherDataStore
 import com.samkt.weathersavy.core.location.LocationService
 import com.samkt.weathersavy.core.network.OpenWeatherApiService
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
@@ -20,6 +21,7 @@ class CurrentWeatherRepositoryImpl
         private val openWeatherApiService: OpenWeatherApiService,
         private val locationService: LocationService,
         private val currentWeatherDatabase: CurrentWeatherDatabase,
+        private val currentWeatherDataStore: CurrentWeatherDataStore,
     ) : CurrentWeatherRepository {
         override fun getCurrentWeather(): Flow<CurrentWeather> {
             val currentWeatherDao = currentWeatherDatabase.dao()
@@ -37,9 +39,8 @@ class CurrentWeatherRepositoryImpl
             onSyncFailed: (error: Exception) -> Unit,
         ) {
             val currentWeatherDao = currentWeatherDatabase.dao()
-            val userLocation = locationService.getLocation()
-            val longitude = userLocation?.longitude ?: "32.4"
-            val latitude = userLocation?.latitude ?: "-0.67"
+            val longitude = currentWeatherDataStore.getUserLongitude().first()
+            val latitude = currentWeatherDataStore.getUserLatitude().first()
             try {
                 val remoteCurrentWeather =
                     openWeatherApiService.getCurrentWeather(
@@ -73,6 +74,14 @@ class CurrentWeatherRepositoryImpl
                 .map {
                     it.isEmpty()
                 }
+        }
+
+        override suspend fun saveUserLocation() {
+            val userLocation = locationService.getLocation()
+            val longitude = userLocation?.longitude ?: "32.4"
+            val latitude = userLocation?.latitude ?: "-0.67"
+            currentWeatherDataStore.saveLatitude(latitude)
+            currentWeatherDataStore.saveLongitude(longitude)
         }
 
         private suspend fun processRequest(

@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "HomeViewModel"
@@ -20,6 +21,15 @@ class HomeViewModel
         private val currentWeatherRepository: CurrentWeatherRepository,
         private val syncingManager: SyncingManager,
     ) : ViewModel() {
+        init {
+        /*
+         * Update the user location everytime the application launches
+         * */
+            viewModelScope.launch {
+                currentWeatherRepository.saveUserLocation()
+            }
+        }
+
         val currentWeather =
             currentWeatherRepository
                 .getCurrentWeather()

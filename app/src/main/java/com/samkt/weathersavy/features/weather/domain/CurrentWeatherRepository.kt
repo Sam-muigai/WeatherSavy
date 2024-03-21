@@ -12,4 +12,6 @@ interface CurrentWeatherRepository {
     )
 
     fun currentWeatherEmpty(): Flow<Boolean>
+
+    suspend fun saveUserLocation()
 }

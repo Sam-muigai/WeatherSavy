@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
+import com.samkt.weathersavy.utils.Result
 import com.samkt.weathersavy.worker.SyncingManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +23,9 @@ class HomeViewModel
         private val currentWeatherRepository: CurrentWeatherRepository,
         private val syncingManager: SyncingManager,
     ) : ViewModel() {
+        private val _homeScreenUiState = MutableStateFlow(HomeScreenUiState())
+        val homeScreenUiState = _homeScreenUiState.asStateFlow()
+
         init {
         /*
          * Update the user location everytime the application launches
@@ -28,30 +33,65 @@ class HomeViewModel
             viewModelScope.launch {
                 currentWeatherRepository.saveUserLocation()
             }
+            getCurrentWeather()
         }
 
-        val currentWeather =
-            currentWeatherRepository
-                .getCurrentWeather()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5_000),
-                    initialValue = CurrentWeather(),
-                )
-
-        val currentWeatherEmpty =
-            currentWeatherRepository.currentWeatherEmpty()
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5_000),
-                    initialValue = false,
-                )
-        val isSyncing: StateFlow<Boolean>
-            get() =
-                syncingManager.isSyncing
-                    .stateIn(
-                        scope = viewModelScope,
-                        started = SharingStarted.WhileSubscribed(5_000),
-                        initialValue = false,
+        private fun getCurrentWeather() {
+            viewModelScope.launch {
+                _homeScreenUiState.update {
+                    it.copy(
+                        isOnBoardingDone = currentWeatherRepository.getIsOnBoardingDone(),
                     )
+                }
+                if (currentWeatherRepository.getIsOnBoardingDone()) {
+                    currentWeatherRepository.getCurrentWeather().collectLatest { weather ->
+                        _homeScreenUiState.update {
+                            it.copy(
+                                isLoading = false,
+                                currentWeather = weather,
+                            )
+                        }
+                    }
+                } else {
+                    refreshCurrentWeather()
+                }
+            }
+        }
+
+        fun refreshCurrentWeather() {
+            viewModelScope.launch {
+                _homeScreenUiState.update {
+                    it.copy(
+                        isLoading = true,
+                    )
+                }
+                currentWeatherRepository.getFirstCurrentWeather().collectLatest { result ->
+                    when (result) {
+                        is Result.Error -> {
+                            _homeScreenUiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                )
+                            }
+                        }
+
+                        is Result.Success -> {
+                            _homeScreenUiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    currentWeather = result.data ?: CurrentWeather(),
+                                    isOnBoardingDone = currentWeatherRepository.getIsOnBoardingDone(),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+
+data class HomeScreenUiState(
+    val isLoading: Boolean = false,
+    val currentWeather: CurrentWeather = CurrentWeather(),
+    val isOnBoardingDone: Boolean = false,
+)

@@ -10,4 +10,8 @@ interface CurrentWeatherDataStore {
     fun getUserLatitude(): Flow<String>
 
     suspend fun saveLatitude(latitude: String)
+
+    suspend fun saveIsOnBoardingDone(isDone: Boolean)
+
+    fun getIsOnBoardingDone(): Flow<Boolean>
 }

@@ -31,6 +31,7 @@ fun String.getBackgroundImage(): String {
         "Squall" -> "https://img.freepik.com/free-photo/weather-effects-collage-concept_23-2150062081.jpg?t=st=1709796305~exp=1709799905~hmac=e4dde99c68fbaf40f0f5dd79bb3294fcc04a468e5794340d866fe4f63867484a&w=740"
         "Clear" -> "https://coatingspromag.com/uploads/images/2016/05/ThinkstockPhotos-482458470.gif"
         "Clouds" -> "https://nature-mentor.com/wp-content/uploads/2017/11/cumulus-active-growth.jpg"
-        else -> "https://img.freepik.com/free-photo/weather-effects-composition_23-2149853297.jpg?t=st=1709796444~exp=1709800044~hmac=a51d9e1a449a93d0ccbdebc87998bee30fd99fa013cc5e6dc4abbaa49ac029bc&w=360"
+        "Tornado" -> "https://img.freepik.com/free-photo/weather-effects-composition_23-2149853297.jpg?t=st=1709796444~exp=1709800044~hmac=a51d9e1a449a93d0ccbdebc87998bee30fd99fa013cc5e6dc4abbaa49ac029bc&w=360"
+        else -> "https://t4.ftcdn.net/jpg/01/31/15/09/360_F_131150985_qbDIQNH9gjOXFQx5RHrFozFtDoFY0Z1g.jpg"
     }
 }

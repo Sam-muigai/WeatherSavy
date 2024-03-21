@@ -7,9 +7,11 @@ import com.samkt.weathersavy.core.location.LocationService
 import com.samkt.weathersavy.core.network.OpenWeatherApiService
 import com.samkt.weathersavy.features.weather.domain.CurrentWeatherRepository
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
+import com.samkt.weathersavy.utils.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -84,35 +86,27 @@ class CurrentWeatherRepositoryImpl
             currentWeatherDataStore.saveLongitude(longitude)
         }
 
-        private suspend fun processRequest(
-            longitude: String,
-            latitude: String,
-        ): CurrentWeather {
-            val currentWeatherDao = currentWeatherDatabase.dao()
-            return try {
-                val remoteCurrentWeather =
-                    openWeatherApiService.getCurrentWeather(
-                        longitude,
-                        latitude,
-                    )
-                val localCurrentWeather = remoteCurrentWeather.toCurrentWeatherEntity()
-                currentWeatherDatabase.withTransaction {
-                    currentWeatherDao.deleteCurrentWeather()
-                    currentWeatherDao.insertCurrentWeather(localCurrentWeather)
-                }
-                val currentWeather: Flow<CurrentWeather> =
-                    currentWeatherDao.getCurrentWeather().map { currentWeathers ->
-                        currentWeathers.firstOrNull()
+        override suspend fun getIsOnBoardingDone(): Boolean {
+            return currentWeatherDataStore.getIsOnBoardingDone().first()
+        }
+
+        override suspend fun getFirstCurrentWeather(): Flow<Result<CurrentWeather>> =
+            flow {
+                val userLocation = locationService.getLocation()
+                val longitude = userLocation?.longitude ?: "32.4"
+                val latitude = userLocation?.latitude ?: "-0.67"
+                val currentWeatherDao = currentWeatherDatabase.dao()
+                try {
+                    val remoteCurrentWeather =
+                        openWeatherApiService.getCurrentWeather(
+                            longitude,
+                            latitude,
+                        )
+                    val localCurrentWeather = remoteCurrentWeather.toCurrentWeatherEntity()
+                    currentWeatherDatabase.withTransaction {
+                        currentWeatherDao.deleteCurrentWeather()
+                        currentWeatherDao.insertCurrentWeather(localCurrentWeather)
                     }
-                        .filterNotNull()
-                        .map {
-                            it.toCurrentWeather()
-                        }
-                currentWeather.first()
-            } catch (exc: Exception) {
-                if (currentWeatherDao.getCurrentWeather().first().isEmpty()) {
-                    CurrentWeather()
-                } else {
                     val currentWeather: Flow<CurrentWeather> =
                         currentWeatherDao.getCurrentWeather().map { currentWeathers ->
                             currentWeathers.firstOrNull()
@@ -121,8 +115,11 @@ class CurrentWeatherRepositoryImpl
                             .map {
                                 it.toCurrentWeather()
                             }
-                    currentWeather.first()
+                    saveUserLocation()
+                    currentWeatherDataStore.saveIsOnBoardingDone(true)
+                    emit(Result.Success(currentWeather.first()))
+                } catch (exc: Exception) {
+                    emit(Result.Error(exc.localizedMessage))
                 }
             }
-        }
     }

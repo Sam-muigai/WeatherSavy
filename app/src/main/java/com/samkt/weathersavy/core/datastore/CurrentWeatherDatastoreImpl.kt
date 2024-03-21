@@ -3,6 +3,7 @@ package com.samkt.weathersavy.core.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -42,8 +43,21 @@ class CurrentWeatherDatastoreImpl
             }
         }
 
+        override suspend fun saveIsOnBoardingDone(isDone: Boolean) {
+            context.dataStore.edit {
+                it[IS_ONBOARDING_DONE] = isDone
+            }
+        }
+
+        override fun getIsOnBoardingDone(): Flow<Boolean> {
+            return context.dataStore.data.map {
+                it[IS_ONBOARDING_DONE] ?: false
+            }
+        }
+
         companion object {
             val LATITUDE_KEY = stringPreferencesKey("latitude")
             val LONGITUDE_KEY = stringPreferencesKey("longitude")
+            val IS_ONBOARDING_DONE = booleanPreferencesKey("onBoardingDone")
         }
     }

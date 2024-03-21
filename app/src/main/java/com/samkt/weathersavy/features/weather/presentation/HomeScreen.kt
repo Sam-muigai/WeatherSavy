@@ -3,6 +3,8 @@ package com.samkt.weathersavy.features.weather.presentation
 import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.samkt.weathersavy.R
-import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
 import com.samkt.weathersavy.utils.getBackgroundImage
 import com.samkt.weathersavy.utils.getTodayDate
 import com.samkt.weathersavy.utils.getWeatherIcon
@@ -61,145 +62,155 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     context: Context,
 ) {
+    val homeScreenUiState by homeViewModel.homeScreenUiState.collectAsState()
+    val snackBarState = remember { SnackbarHostState() }
     LaunchedEffect(
-        key1 = Unit,
+        key1 = homeScreenUiState.isOnBoardingDone,
         block = {
-            SyncingWorker.startSyncing(context)
+            if (homeScreenUiState.isOnBoardingDone) {
+                SyncingWorker.startSyncing(context)
+            }
         },
     )
 
-    val snackBarState =
-        remember {
-            SnackbarHostState()
-        }
-    val currentWeather by homeViewModel.currentWeather.collectAsState()
-    val isSyncing by homeViewModel.isSyncing.collectAsState()
-    val isEmpty by homeViewModel.currentWeatherEmpty.collectAsState()
     HomeScreenContent(
         modifier = modifier,
-        currentWeather = currentWeather,
         snackBarState = snackBarState,
         date = getTodayDate(),
-        isLoading = isSyncing || isEmpty,
+        homeScreenUiState = homeScreenUiState,
     )
 }
 
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
-    currentWeather: CurrentWeather,
     date: String = "March 06",
     snackBarState: SnackbarHostState,
-    isLoading: Boolean = false,
+    homeScreenUiState: HomeScreenUiState,
 ) {
     val context = LocalContext.current
+    val currentWeather = homeScreenUiState.currentWeather
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = {
             SnackbarHost(snackBarState)
         },
     ) { paddingValues ->
-        Box(
-            modifier = modifier.fillMaxSize(),
+        AnimatedVisibility(
+            modifier = Modifier.padding(paddingValues),
+            enter = fadeIn(),
+            exit = fadeOut(),
+            visible = homeScreenUiState.isLoading,
         ) {
-            val imageUrl = currentWeather.condition.getBackgroundImage()
-            Log.d(TAG, imageUrl)
-            AsyncImage(
+            Box(
                 modifier = Modifier.fillMaxSize(),
-                model =
-                    ImageRequest.Builder(context)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
-                contentDescription = "background",
-                contentScale = ContentScale.Crop,
-                colorFilter = ColorFilter.tint(Color.Gray, blendMode = BlendMode.Modulate),
-            )
-
-            Column(
-                modifier =
-                    Modifier
-                        .padding(paddingValues)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        modifier = Modifier.size(32.dp),
-                        painter = painterResource(id = R.drawable.ic_location),
-                        contentDescription = null,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = currentWeather.location,
-                        style =
-                            MaterialTheme.typography.bodyLarge,
-                    )
-                }
-                Spacer(modifier = Modifier.height(40.dp))
-                Text(
-                    text = date,
-                    style =
-                        MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Normal,
-                        ),
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                AsyncImage(
-                    modifier = Modifier.size(48.dp),
-                    model =
-                        ImageRequest.Builder(context)
-                            .data(currentWeather.weatherIcon.getWeatherIcon())
-                            .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = currentWeather.condition,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(
-                    text =
-                        buildAnnotatedString {
-                            withStyle(style = SpanStyle()) {
-                                append(
-                                    currentWeather.temperature.toString(),
-                                )
-                            }
-                            withStyle(
-                                style =
-                                    SpanStyle(
-                                        fontSize = 24.sp,
-                                        baselineShift = BaselineShift.Superscript,
-                                    ),
-                            ) {
-                                append("°C")
-                            }
-                        },
-                    style = MaterialTheme.typography.displayLarge,
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                WeatherAnalysis(
-                    modifier = Modifier.padding(16.dp),
-                    humidity = currentWeather.humidity.toString(),
-                    windSpeed = currentWeather.wind.toString(),
-                    feelsLike = currentWeather.feelsLike.toString(),
-                )
-            }
-            AnimatedVisibility(
-                modifier = Modifier.align(Alignment.Center),
-                visible = isLoading,
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
+            }
+        }
+        AnimatedVisibility(
+            modifier = Modifier.padding(paddingValues),
+            enter = fadeIn(),
+            exit = fadeOut(),
+            visible = !homeScreenUiState.isLoading,
+        ) {
+            Box(
+                modifier = modifier.fillMaxSize(),
+            ) {
+                val imageUrl = currentWeather.condition.getBackgroundImage()
+                Log.d(TAG, imageUrl)
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model =
+                        ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build(),
+                    contentDescription = "background",
+                    contentScale = ContentScale.Crop,
+                    colorFilter = ColorFilter.tint(Color.Gray, blendMode = BlendMode.Modulate),
+                )
+
+                Column(
+                    modifier =
+                        Modifier
+                            .padding(paddingValues)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(32.dp),
+                            painter = painterResource(id = R.drawable.ic_location),
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = currentWeather.location,
+                            style =
+                                MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(40.dp))
+                    Text(
+                        text = date,
+                        style =
+                            MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Normal,
+                            ),
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    AsyncImage(
+                        modifier = Modifier.size(48.dp),
+                        model =
+                            ImageRequest.Builder(context)
+                                .data(currentWeather.weatherIcon.getWeatherIcon())
+                                .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = currentWeather.condition,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(
+                        text =
+                            buildAnnotatedString {
+                                withStyle(style = SpanStyle()) {
+                                    append(
+                                        currentWeather.temperature.toString(),
+                                    )
+                                }
+                                withStyle(
+                                    style =
+                                        SpanStyle(
+                                            fontSize = 24.sp,
+                                            baselineShift = BaselineShift.Superscript,
+                                        ),
+                                ) {
+                                    append("°C")
+                                }
+                            },
+                        style = MaterialTheme.typography.displayLarge,
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    WeatherAnalysis(
+                        modifier = Modifier.padding(16.dp),
+                        humidity = currentWeather.humidity.toString(),
+                        windSpeed = currentWeather.wind.toString(),
+                        feelsLike = currentWeather.feelsLike.toString(),
+                    )
+                }
             }
         }
     }

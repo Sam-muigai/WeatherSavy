@@ -56,15 +56,15 @@ class SyncingWorker
 
                 val startSyncingRequest =
                     PeriodicWorkRequestBuilder<SyncingWorker>(
-                        repeatInterval = 30,
-                        repeatIntervalTimeUnit = TimeUnit.MINUTES,
+                        repeatInterval = 1,
+                        repeatIntervalTimeUnit = TimeUnit.HOURS,
                     )
                         .setConstraints(constraints)
                         .build()
 
                 WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                     WORK_NAME,
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                    ExistingPeriodicWorkPolicy.KEEP,
                     startSyncingRequest,
                 )
             }

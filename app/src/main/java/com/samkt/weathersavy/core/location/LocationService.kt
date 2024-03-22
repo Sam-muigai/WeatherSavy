@@ -24,7 +24,6 @@ class LocationService
         suspend fun getLocation(): UserLocation? {
             return try {
                 val location = fusedLocationClient.lastLocation.await()
-                Log.d(TAG, "Location: $location")
                 val latitude = location.latitude
                 val longitude = location.longitude
                 val userLocation = UserLocation(longitude.toString(), latitude.toString())

@@ -1,5 +1,6 @@
 package com.samkt.weathersavy.features.weather.data
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.samkt.weathersavy.core.database.CurrentWeatherDatabase
 import com.samkt.weathersavy.core.datastore.CurrentWeatherDataStore
@@ -80,10 +81,12 @@ class CurrentWeatherRepositoryImpl
 
         override suspend fun saveUserLocation() {
             val userLocation = locationService.getLocation()
-            val longitude = userLocation?.longitude ?: "32.4"
-            val latitude = userLocation?.latitude ?: "-0.67"
-            currentWeatherDataStore.saveLatitude(latitude)
-            currentWeatherDataStore.saveLongitude(longitude)
+            val longitude = userLocation?.longitude
+            val latitude = userLocation?.latitude
+            if (longitude != null && latitude != null) {
+                currentWeatherDataStore.saveLatitude(latitude)
+                currentWeatherDataStore.saveLongitude(longitude)
+            }
         }
 
         override suspend fun getIsOnBoardingDone(): Boolean {
@@ -93,8 +96,13 @@ class CurrentWeatherRepositoryImpl
         override suspend fun getFirstCurrentWeather(): Flow<Result<CurrentWeather>> =
             flow {
                 val userLocation = locationService.getLocation()
+
                 val longitude = userLocation?.longitude ?: "32.4"
                 val latitude = userLocation?.latitude ?: "-0.67"
+
+                Log.d(TAG, "Longitude: $longitude")
+                Log.d(TAG, "Latitude: $latitude")
+
                 val currentWeatherDao = currentWeatherDatabase.dao()
                 try {
                     val remoteCurrentWeather =

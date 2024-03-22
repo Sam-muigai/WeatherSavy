@@ -7,5 +7,6 @@ data class CurrentWeather(
     val humidity: Int = 0,
     val wind: Double = 0.0,
     val feelsLike: Int = 0,
+    val lastUpdated: String = "",
     val weatherIcon: String = "",
 )

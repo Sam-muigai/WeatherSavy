@@ -14,4 +14,5 @@ data class CurrentWeatherEntity(
     val wind: Double,
     val feelsLike: Int,
     val weatherIcon: String,
+    val lastUpdated: String,
 )

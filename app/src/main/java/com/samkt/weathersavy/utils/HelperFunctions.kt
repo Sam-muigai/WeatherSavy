@@ -14,6 +14,12 @@ fun getTodayDate(): String {
     return format.format(date)
 }
 
+fun getCurrentFormattedDate(): String {
+    val currentTime = System.currentTimeMillis()
+    val dateFormat = SimpleDateFormat("M/d/yyyy h:mm a", Locale.US)
+    return dateFormat.format(currentTime)
+}
+
 @Suppress("ktlint:standard:max-line-length")
 fun String.getBackgroundImage(): String {
     return when (this) {

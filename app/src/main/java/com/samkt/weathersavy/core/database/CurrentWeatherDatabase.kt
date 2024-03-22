@@ -6,7 +6,7 @@ import com.samkt.weathersavy.core.database.entities.CurrentWeatherEntity
 
 @Database(
     entities = [CurrentWeatherEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class CurrentWeatherDatabase : RoomDatabase() {

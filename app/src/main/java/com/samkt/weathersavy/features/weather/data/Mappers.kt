@@ -3,6 +3,7 @@ package com.samkt.weathersavy.features.weather.data
 import com.samkt.weathersavy.core.database.entities.CurrentWeatherEntity
 import com.samkt.weathersavy.core.network.dtos.CurrentWeatherResponseDto
 import com.samkt.weathersavy.features.weather.domain.model.CurrentWeather
+import com.samkt.weathersavy.utils.getCurrentFormattedDate
 
 fun CurrentWeatherResponseDto.toCurrentWeatherEntity(): CurrentWeatherEntity {
     return CurrentWeatherEntity(
@@ -13,6 +14,7 @@ fun CurrentWeatherResponseDto.toCurrentWeatherEntity(): CurrentWeatherEntity {
         wind = windDto?.speed ?: 0.0,
         feelsLike = mainDto?.humidity ?: 0,
         weatherIcon = weatherDto[0].icon,
+        lastUpdated = getCurrentFormattedDate(),
     )
 }
 
@@ -24,6 +26,7 @@ fun CurrentWeatherEntity.toCurrentWeather(): CurrentWeather {
         humidity,
         wind,
         feelsLike,
+        lastUpdated,
         weatherIcon,
     )
 }

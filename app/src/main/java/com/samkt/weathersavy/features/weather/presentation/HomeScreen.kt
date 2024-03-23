@@ -111,7 +111,7 @@ fun HomeScreenContent(
                 model =
                     ImageRequest.Builder(context)
                         .data(imageUrl)
-                        .crossfade(500)
+                        .crossfade(true)
                         .build(),
                 contentDescription = "background",
                 placeholder = painterResource(id = R.drawable.clear_sky),

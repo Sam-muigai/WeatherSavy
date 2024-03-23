@@ -26,6 +26,10 @@ Obtain your key from [OPEN WEATHER API](https://openweathermap.org/api) and repl
   </tr>
   </table>
 
+## Demo
+
+https://github.com/Sam-muigai/WeatherSavy/assets/97452496/0682d6bf-56cf-4471-8be5-1e26bc492f33
+  
 ## Tech Stack
 - The app is entirely written in [Kotlin](https://kotlinlang.org/)
 - [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Hilt provides a standard way to use DI in your application by providing containers for every Android class in your project and managing their lifecycles automatically.

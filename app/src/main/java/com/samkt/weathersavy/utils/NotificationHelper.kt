@@ -2,10 +2,13 @@ package com.samkt.weathersavy.utils
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.samkt.weathersavy.MainActivity
 import com.samkt.weathersavy.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -23,6 +26,13 @@ class NotificationHelper
     ) {
         private val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        private val intent =
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+        private val pendingIntent: PendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         fun showNotification(
             title: String = "Sample title",
@@ -43,6 +53,7 @@ class NotificationHelper
                     .setSmallIcon(R.drawable.ic_clouds)
                     .setContentTitle(title)
                     .setContentText(content)
+                    .setContentIntent(pendingIntent)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
             notificationManager.notify(NOTIFICATION_ID, builder.build())

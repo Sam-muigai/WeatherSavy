@@ -51,6 +51,7 @@ class NotificationHelper
             val builder =
                 NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_clouds)
+                    .setAutoCancel(true)
                     .setContentTitle(title)
                     .setContentText(content)
                     .setContentIntent(pendingIntent)
